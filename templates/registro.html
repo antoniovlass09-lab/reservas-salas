@@ -1,0 +1,4 @@
+{% extends "base.html" %}{% block c %}<div class="card" style="max-width:440px;margin:30px auto"><h1>Crear cuenta</h1><p class="sub">Registro para docentes</p>
+<form method="post">{{ csrf_input() }}<label>Nombre completo</label><input name="nombre" required><label>Correo institucional</label><input type="email" name="correo" required>
+<label>Contraseña (mín. 8)</label><input type="password" name="password" minlength="8" required><br><br><button style="width:100%">Registrarme</button></form>
+<p style="text-align:center"><a href="{{ url_for('login') }}">Ya tengo cuenta</a></p></div>{% endblock %}

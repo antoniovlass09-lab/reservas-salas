@@ -1,0 +1,5 @@
+{% extends "base.html" %}{% block c %}<div class="card hero"><div class="l"><h1>Reserva tu sala de cómputo en segundos</h1>
+<p>Consulta disponibilidad en tiempo real, solicita tu práctica y recibe la respuesta del Centro de Cómputo.</p><p>✔ Sin traslapes &nbsp; ✔ Notificaciones &nbsp; ✔ Calendario institucional</p></div>
+<div class="r"><h2>Iniciar sesión</h2><form method="post">{{ csrf_input() }}<label>Correo institucional</label><input type="email" name="correo" required>
+<label>Contraseña</label><input type="password" name="password" required><br><br><button style="width:100%">Entrar</button></form>
+<p style="text-align:center"><a href="{{ url_for('registro') }}">Crear cuenta de docente</a></p></div></div>{% endblock %}

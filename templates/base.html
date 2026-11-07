@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#14233f">
+  <title>Reservas ITM · Centro de Cómputo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header class="site-header">
+  <div class="top">
+    <a class="identity" href="{{ url_for('calendario') if sesion.uid else url_for('login') }}">
+      <div class="logos">
+        <span class="logo">
+          <img src="{{ url_for('static', filename='img/logo-tecnm.png') }}" alt="TecNM"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+          <i>TecNM</i>
+        </span>
+        <span class="logo">
+          <img src="{{ url_for('static', filename='img/logo-itm.png') }}" alt="ITM"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+          <i>ITM</i>
+        </span>
+      </div>
+      <span class="brand">
+        <b>Reservas ITM</b>
+        <small>Centro de Cómputo · Campus Minatitlán</small>
+      </span>
+    </a>
+    {% if sesion.uid %}
+    <nav class="menu" aria-label="Navegación principal">
+      <a href="{{ url_for('calendario') }}" class="{{ 'on' if request.endpoint=='calendario' }}">Calendario</a>
+      <a href="{{ url_for('reservar') }}" class="{{ 'on' if request.endpoint=='reservar' }}">Reservar sala</a>
+      <a href="{{ url_for('mis_reservaciones') }}" class="{{ 'on' if request.endpoint=='mis_reservaciones' }}">Mis reservas</a>
+      {% if sesion.rol=='encargado' %}
+      <a href="{{ url_for('panel') }}" class="{{ 'on' if request.endpoint=='panel' }}">Administración</a>
+      {% endif %}
+      <a class="notification-link" href="{{ url_for('notificaciones') }}" aria-label="Notificaciones">
+        Notificaciones
+        {% if no_leidas %}<span class="dot">{{ no_leidas }}</span>{% endif %}
+      </a>
+      <button class="ic theme-toggle" id="tema" type="button" title="Cambiar tema" aria-label="Cambiar tema">◐</button>
+      <form method="post" action="{{ url_for('logout') }}" class="inline">{{ csrf_input() }}<button class="ic logout-link" type="submit">Salir</button></form>
+    </nav>
+    {% else %}
+    <nav class="menu"><button class="ic theme-toggle" id="tema" type="button" title="Cambiar tema">◐</button></nav>
+    {% endif %}
+  </div>
+</header>
+<main class="page-container">{% block c %}{% endblock %}</main>
+<footer class="site-footer">
+  <span>Instituto Tecnológico de Minatitlán</span>
+  <span>Sistema de Reservación de Salas de Cómputo</span>
+</footer>
+<div class="toasts">
+  {% for c,m in get_flashed_messages(with_categories=true) %}
+    <div class="toast {{ c }}" data-toast>{{ m }}</div>
+  {% endfor %}
+</div>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

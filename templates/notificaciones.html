@@ -1,0 +1,2 @@
+{% extends "base.html" %}{% block c %}<div class="card"><h1>Notificaciones</h1><p class="sub">Respuestas del Centro de Cómputo.</p>
+{% for n in ns %}<p style="padding:12px 14px;border-radius:12px;background:var(--bg)">{{ n.mensaje }}<small style="display:block;color:var(--mut)">{{ n.creada }}</small></p>{% else %}<p>Sin notificaciones.</p>{% endfor %}</div>{% endblock %}

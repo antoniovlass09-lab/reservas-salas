@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% block c %}<div class="card"><div class="bar"><div><h1>Calendario semanal</h1><p class="sub" style="margin:0">Toca un espacio libre para reservar.</p></div>
+<form method="get" style="margin-left:auto"><label style="margin-top:0">Sala</label><select name="sala" onchange="this.form.submit()">
+{% for s in salas %}<option value="{{ s.id }}" {{ 'selected' if s.id==sala_id }}>{{ s.nombre }}</option>{% endfor %}</select></form></div>
+<div class="bar"><a class="btn alt" href="?sala={{ sala_id }}&semana={{ prev }}">← Anterior</a><a class="btn alt" href="?sala={{ sala_id }}">Hoy</a><a class="btn alt" href="?sala={{ sala_id }}&semana={{ nxt }}">Siguiente →</a>
+<button id="abrir">＋ Nueva reservación</button></div>
+<div class="legend"><span><i style="background:#12a77d55"></i>Aprobada</span><span><i style="background:#f5a52460"></i>En espera</span><span><i style="background:#6a759250"></i>Mantenimiento</span><span><i style="background:var(--bg);border:1.5px solid var(--pri)"></i>Libre</span></div>
+<table class="cal"><thead><tr><th>Hora</th>{% for d in dias %}<th class="{{ 'hoy' if d.isoformat()==hoy }}">{{ ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'][loop.index0] }}<br>{{ d.strftime('%d/%m') }}</th>{% endfor %}</tr></thead><tbody>
+{% for s in slots %}<tr><th class="{{ 'media' if s.endswith(':30') }}">{{ s }}</th>{% for d in dias %}{% set iso = d.isoformat() %}{% set c = celdas.get((iso, s)) %}
+{% if c %}<td class="{{ c[1] }}" title="{{ c[0] }}">{% if c[2] %}<small>{{ c[0] }}</small>{% endif %}</td>
+{% elif iso < hoy or (iso == hoy and s < ahora) %}<td class="past"></td>
+{% else %}<td class="libre" data-fecha="{{ iso }}" data-hora="{{ s }}"></td>{% endif %}{% endfor %}</tr>{% endfor %}</tbody></table></div>
+<div class="modal" id="modal"><div class="card"><button class="x" id="cerrar">✕</button><h1>Nueva reservación</h1><p class="sub">Completa los datos de tu práctica.</p>{% include "_form.html" %}</div></div>{% endblock %}

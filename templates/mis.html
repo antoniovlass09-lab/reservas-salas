@@ -1,0 +1,7 @@
+{% extends "base.html" %}{% block c %}<div class="card"><div class="bar"><div><h1>Mis reservaciones</h1><p class="sub" style="margin:0">Historial y estado de tus solicitudes.</p></div>
+<input data-filtro="#tb" placeholder="🔎 Buscar..." style="margin-left:auto;width:220px"></div>
+<table id="tb"><thead><tr><th>Fecha</th><th>Horario</th><th>Sala</th><th>Materia</th><th>Estado</th><th></th></tr></thead><tbody>
+{% for r in rs %}<tr><td>{{ r.fecha }}</td><td>{{ r.hora_inicio }}–{{ r.hora_fin }}</td><td>{{ r.sala }}</td><td>{{ r.materia }}</td>
+<td><span class="badge {{ r.estado }}">{{ r.estado }}</span>{% if r.motivo_rechazo %}<small>{{ r.motivo_rechazo }}</small>{% endif %}</td>
+<td>{% if r.estado in ('Pendiente','Aprobada') and r.fecha>=hoy %}<form class="inline" method="post" action="{{ url_for('cancelar', rid=r.id) }}" onsubmit="return confirm('¿Cancelar esta reservación?')">{{ csrf_input() }}<button class="ghost">Cancelar</button></form>{% endif %}</td></tr>
+{% else %}<tr><td colspan="6">Aún no tienes reservaciones. <a href="{{ url_for('reservar') }}">Crear una</a></td></tr>{% endfor %}</tbody></table></div>{% endblock %}
