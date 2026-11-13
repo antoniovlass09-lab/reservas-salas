@@ -1,4 +1,5 @@
-{% extends "base.html" %}{% block c %}<div class="card" style="max-width:440px;margin:30px auto"><h1>Crear cuenta</h1><p class="sub">Registro para docentes</p>
+{% extends "base.html" %}{% block c %}<div class="hero-logos centro"><span class="logo lg"><img src="{{ url_for('static', filename='img/logo-tecnm.png') }}" alt="Tecnológico Nacional de México" data-fallback><i>TecNM</i></span><span class="logo lg"><img src="{{ url_for('static', filename='img/logo-itm.png') }}" alt="Instituto Tecnológico de Minatitlán" data-fallback><i>ITM</i></span></div>
+<div class="card" style="max-width:440px;margin:30px auto"><h1>Crear cuenta</h1><p class="sub">Registro para docentes</p>
 <form method="post">{{ csrf_input() }}<label>Nombre completo</label><input name="nombre" required><label>Correo institucional</label><input type="email" name="correo" required>
-<label>Contraseña (mín. 8)</label><input type="password" name="password" minlength="8" required><br><br><button style="width:100%">Registrarme</button></form>
+<label>Contraseña (mín. 8)</label><div class="pass"><input type="password" name="password" id="password" minlength="8" required autocomplete="new-password"><button type="button" class="ver-pass" data-ver-pass aria-label="Mostrar contraseña" aria-pressed="false">Mostrar</button></div><br><br><button style="width:100%">Registrarme</button></form>
 <p style="text-align:center"><a href="{{ url_for('login') }}">Ya tengo cuenta</a></p></div>{% endblock %}

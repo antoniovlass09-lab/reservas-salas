@@ -4,6 +4,22 @@ Importar este módulo NO falla si MongoDB está apagado (la conexión es perezos
 La app llama a conectar() e inicializar() al arrancar y muestra un error claro.
 """
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+from datetime import datetime
+
+"""Conexión a MongoDB y preparación inicial de la base de datos.
+
+Importar este módulo NO falla si MongoDB está apagado (la conexión es perezosa).
+La app llama a conectar() e inicializar() al arrancar y muestra un error claro.
+"""
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from datetime import datetime
 
 from bson import ObjectId
@@ -23,6 +39,7 @@ salas = db["salas"]
 reservaciones = db["reservaciones"]
 notificaciones = db["notificaciones"]
 bloqueos = db["bloqueos"]
+materias = db["materias"]
 
 # Salas oficiales (se pueden agregar o renombrar desde Administración > Salas).
 SALAS_OFICIALES = ["SC1", "SC2", "SC3", "LR", "LIDA"]
@@ -58,6 +75,10 @@ def inicializar(sembrar_demo=False):
     reservaciones.create_index([("usuario_id", 1)])
     bloqueos.create_index([("sala_id", 1), ("fecha", 1)])
     notificaciones.create_index([("usuario_id", 1), ("leida", 1)])
+    try:
+        materias.create_index("abreviatura", unique=True)
+    except Exception:
+        pass  # si ya existe con otra configuración, no se interrumpe el arranque
 
     for nombre in SALAS_OFICIALES:
         if salas.find_one({"nombre": nombre}) is None:

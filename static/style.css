@@ -286,3 +286,91 @@ td{color:var(--tx)}td small{display:block;color:var(--mut);font-size:.76rem;marg
 .Finalizada,.Vencida{background:color-mix(in srgb,var(--mut) 16%,transparent);color:var(--mut)}
 .menu form.inline{margin:0;display:inline-flex}
 .menu button.logout-link{font-family:inherit}
+
+/* =========================================================
+   RESCOM ITM · logos, colores de materias y reportes
+   ========================================================= */
+
+/* Logos institucionales: altura fija para que siempre queden dentro de su cuadro */
+.logo{width:auto;min-width:46px;height:48px;padding:5px 9px;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.logo img{height:36px;width:auto;max-width:none;display:block}
+.logo.lg{height:72px;padding:8px 14px}
+.logo.lg img{height:54px}
+.hero-logos{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:22px}
+.eyebrow{display:block;font-size:.78rem;font-weight:800;letter-spacing:.14em;opacity:.85;margin-bottom:8px}
+.brand b{letter-spacing:.02em}
+@media(max-width:600px){.logo{height:38px;min-width:38px;padding:4px 7px}.logo img{height:28px}.logo.lg{height:56px}.logo.lg img{height:40px}}
+
+/* Campo de contraseña con botón mostrar/ocultar */
+.pass{position:relative}
+.pass input{padding-right:84px}
+.pass button.ver-pass{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:0;box-shadow:none;color:var(--pri);padding:6px 10px;font-size:.8rem;font-weight:700}
+.pass button.ver-pass:hover{background:none;border:0;color:var(--tx);transform:translateY(-50%)}
+
+/* Lista de materias con casillas (asignación a docentes) */
+.chk-box{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:2px 14px;max-height:220px;overflow:auto;padding:10px 12px;border:1.5px solid var(--bd);border-radius:12px;background:var(--bg)}
+.chk{display:flex;gap:8px;align-items:center;margin:0;padding:4px 0;font-weight:500;font-size:.85rem;text-transform:none;letter-spacing:0;color:var(--tx)}
+details summary{cursor:pointer;color:var(--pri);font-weight:650;font-size:.85rem}
+
+/* Calendario en tarjetas */
+.cal{border-collapse:separate!important;border-spacing:3px!important}
+.cal td,.cal th{border:0}
+.cal td{border-radius:10px}
+.cal td.libre{background:color-mix(in srgb,var(--bd) 35%,transparent)}
+.cal td.past{border-radius:10px}
+
+/* Materias del horario académico: una tarjeta de color por materia */
+.cal td[class*="materia-"]{
+  --mc:#64748b;
+  background:color-mix(in srgb,var(--mc) 15%,var(--card));
+  color:color-mix(in srgb,var(--mc) 72%,#000);
+  border:1px solid color-mix(in srgb,var(--mc) 28%,transparent);
+  border-left:4px solid var(--mc);
+  font-weight:650;font-size:.72rem;padding:4px;
+  box-shadow:0 1px 4px rgba(15,23,42,.05);
+  transition:background .2s,transform .2s,box-shadow .2s;
+}
+.cal td[class*="materia-"]:hover{background:color-mix(in srgb,var(--mc) 25%,var(--card));transform:translateY(-1px);box-shadow:0 4px 12px rgba(15,23,42,.1)}
+.cal td[class*="materia-"] small{display:block;line-height:1.25;overflow-wrap:anywhere;color:inherit}
+[data-theme="dark"] .cal td[class*="materia-"]{
+  background:color-mix(in srgb,var(--mc) 24%,var(--card));
+  color:color-mix(in srgb,var(--mc) 45%,#fff);
+}
+.cal td.materia-prog{--mc:#3b82f6}.cal td.materia-fprog{--mc:#8b5cf6}.cal td.materia-cemp{--mc:#22c55e}
+.cal td.materia-md{--mc:#f97316}.cal td.materia-arq{--mc:#ec4899}.cal td.materia-li{--mc:#06b6d4}
+.cal td.materia-edat{--mc:#eab308}.cal td.materia-ftel{--mc:#6366f1}.cal td.materia-inv{--mc:#ef4444}
+.cal td.materia-lya{--mc:#a855f7}.cal td.materia-io{--mc:#10b981}.cal td.materia-so{--mc:#0ea5e9}
+.cal td.materia-isw{--mc:#d946ef}.cal td.materia-ia{--mc:#14b8a6}.cal td.materia-cdat{--mc:#64748b}
+.cal td.materia-tbd{--mc:#f43f5e}.cal td.materia-default{--mc:#94a3b8}
+/* Materias agregadas después desde el panel */
+.cal td.materia-x0{--mc:#2563eb}.cal td.materia-x1{--mc:#c026d3}.cal td.materia-x2{--mc:#16a34a}
+.cal td.materia-x3{--mc:#ea580c}.cal td.materia-x4{--mc:#0891b2}.cal td.materia-x5{--mc:#dc2626}
+.cal td.materia-x6{--mc:#7c3aed}.cal td.materia-x7{--mc:#ca8a04}
+
+/* Reservaciones y mantenimiento: mismo estilo de tarjeta */
+.cal td.aprobada,.cal td.pendiente,.cal td.bloqueo{border-left:4px solid var(--mc);font-weight:650}
+.cal td.aprobada{--mc:var(--ok);background:color-mix(in srgb,var(--ok) 16%,var(--card))}
+.cal td.pendiente{--mc:var(--warn);background:color-mix(in srgb,var(--warn) 18%,var(--card))}
+.cal td.bloqueo{--mc:var(--mut);background:color-mix(in srgb,var(--mut) 16%,var(--card))}
+
+/* Reportes */
+.only-print{display:none}
+.rep-head{align-items:center;justify-content:space-between;gap:18px;border-bottom:2px solid #14233f;padding-bottom:12px;margin-bottom:18px;font-size:.9rem}
+.rep-head img{height:58px;width:auto;max-width:none}
+@media print{
+  :root,[data-theme="dark"]{--bg:#fff;--card:#fff;--tx:#000;--mut:#444;--bd:#ccc}
+  body{background:#fff}
+  .site-header,.site-footer,.toasts,.no-print{display:none!important}
+  .only-print{display:flex}
+  .page-container{margin:0;padding:0;max-width:none}
+  .card,.stat{box-shadow:none;break-inside:avoid}
+  .stats{display:flex;gap:10px}
+  .stat:hover{transform:none}
+}
+
+/* Logos centrados en las pantallas previas al inicio de sesión (login / registro) */
+.hero-logos.centro{justify-content:center;align-items:center;gap:14px;margin:34px auto 0;max-width:960px}
+.hero-logos.centro + .hero,.hero-logos.centro + .card{margin-top:20px}
+
+/* Bloques que se muestran solo al elegir "Otra/Otro" */
+[hidden]{display:none!important}

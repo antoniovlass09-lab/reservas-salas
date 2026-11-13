@@ -1,5 +1,5 @@
 {% extends "base.html" %}{% block c %}<div class="card"><div class="bar"><div><h1>Calendario semanal</h1><p class="sub" style="margin:0">Toca un espacio libre para reservar.</p></div>
-<form method="get" style="margin-left:auto"><label style="margin-top:0">Sala</label><select name="sala" onchange="this.form.submit()">
+<form method="get" style="margin-left:auto"><label style="margin-top:0">Sala</label><select name="sala" data-autosubmit>
 {% for s in salas %}<option value="{{ s.id }}" {{ 'selected' if s.id==sala_id }}>{{ s.nombre }}</option>{% endfor %}</select></form></div>
 <div class="bar"><a class="btn alt" href="?sala={{ sala_id }}&semana={{ prev }}">← Anterior</a><a class="btn alt" href="?sala={{ sala_id }}">Hoy</a><a class="btn alt" href="?sala={{ sala_id }}&semana={{ nxt }}">Siguiente →</a>
 <button id="abrir">＋ Nueva reservación</button></div>

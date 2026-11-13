@@ -1,0 +1,48 @@
+{% extends "base.html" %}{% block c %}
+<div class="only-print rep-head">
+  <img src="{{ url_for('static', filename='img/logo-tecnm.png') }}" alt="Tecnológico Nacional de México">
+  <div><b>Instituto Tecnológico de Minatitlán</b><br>RESCOM ITM · Reporte mensual de uso de salas de cómputo<br>{{ mes_txt }} · Generado el {{ generado }}</div>
+  <img src="{{ url_for('static', filename='img/logo-itm.png') }}" alt="Instituto Tecnológico de Minatitlán">
+</div>
+
+<div class="card no-print">
+  <div class="bar"><div><h1>Reporte mensual</h1><p class="sub" style="margin:0">Materias y docentes que usaron cada sala (reservaciones aprobadas y finalizadas).</p></div></div>
+  <form method="get" class="row" style="align-items:end">
+    <div><label>Mes</label><input type="month" name="mes" value="{{ mes }}" required></div>
+    <div><label>Sala</label><select name="sala"><option value="todas">Todas las salas</option>{% for s in salas %}<option value="{{ s.id }}" {{ 'selected' if s.id==sala_sel }}>{{ s.nombre }}</option>{% endfor %}</select></div>
+    <button>Generar</button>
+  </form>
+  <div class="bar" style="margin-top:14px">
+    <a class="btn alt" href="?mes={{ prev }}&sala={{ sala_sel }}">← Mes anterior</a>
+    <a class="btn alt" href="?mes={{ nxt }}&sala={{ sala_sel }}">Mes siguiente →</a>
+    <a class="btn alt" href="?mes={{ mes }}&sala={{ sala_sel }}&formato=csv" style="margin-left:auto">⬇ Descargar CSV (Excel)</a>
+    <button type="button" data-print>🖨 Imprimir / guardar PDF</button>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stat c"><b>{{ rs|length }}</b><span>Reservaciones en {{ mes_txt }}</span></div>
+  <div class="stat b"><b>{{ total_horas|round(1) }}</b><span>Horas de uso</span></div>
+  <div class="stat"><b>{{ resumen|length }}</b><span>Salas con actividad</span></div>
+</div>
+
+{% for s in resumen %}
+<div class="card">
+  <h2>{{ s.nombre }}</h2><p class="sub">{{ s.reservas }} reservación(es) · {{ s.horas|round(1) }} hora(s)</p>
+  <table><thead><tr><th>Materia</th><th>Docente</th><th>Reservaciones</th><th>Horas</th></tr></thead><tbody>
+  {% for d in s.detalle %}<tr><td>{{ d.materia }}</td><td>{{ d.docente }}</td><td>{{ d.reservas }}</td><td>{{ d.horas|round(1) }}</td></tr>{% endfor %}
+  </tbody></table>
+</div>
+{% else %}
+<div class="card"><p>No hay reservaciones aprobadas o finalizadas en {{ mes_txt }}.</p></div>
+{% endfor %}
+
+{% if rs %}
+<div class="card">
+  <h2>Detalle de registros</h2>
+  <table><thead><tr><th>Fecha</th><th>Horario</th><th>Sala</th><th>Materia</th><th>Docente</th></tr></thead><tbody>
+  {% for r in rs %}<tr><td>{{ r.fecha }}</td><td>{{ r.hora_inicio }}–{{ r.hora_fin }}</td><td>{{ r.sala }}</td><td>{{ r.materia }}</td><td>{{ r.docente }}</td></tr>{% endfor %}
+  </tbody></table>
+</div>
+{% endif %}
+{% endblock %}

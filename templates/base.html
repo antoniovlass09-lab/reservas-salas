@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#14233f">
-  <title>Reservas ITM · Centro de Cómputo</title>
+  <title>RESCOM ITM · Sistema de Reservaciones de Salas de Cómputo</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -14,21 +14,21 @@
 <header class="site-header">
   <div class="top">
     <a class="identity" href="{{ url_for('calendario') if sesion.uid else url_for('login') }}">
+      {% if sesion.uid %}
       <div class="logos">
         <span class="logo">
-          <img src="{{ url_for('static', filename='img/logo-tecnm.png') }}" alt="TecNM"
-               onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+          <img src="{{ url_for('static', filename='img/logo-tecnm.png') }}" alt="Tecnológico Nacional de México" data-fallback>
           <i>TecNM</i>
         </span>
         <span class="logo">
-          <img src="{{ url_for('static', filename='img/logo-itm.png') }}" alt="ITM"
-               onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+          <img src="{{ url_for('static', filename='img/logo-itm.png') }}" alt="Instituto Tecnológico de Minatitlán" data-fallback>
           <i>ITM</i>
         </span>
       </div>
+      {% endif %}
       <span class="brand">
-        <b>Reservas ITM</b>
-        <small>Centro de Cómputo · Campus Minatitlán</small>
+        <b>RESCOM ITM</b>
+        <small>Sistema de Reservaciones de Salas de Cómputo</small>
       </span>
     </a>
     {% if sesion.uid %}
@@ -38,8 +38,9 @@
       <a href="{{ url_for('mis_reservaciones') }}" class="{{ 'on' if request.endpoint=='mis_reservaciones' }}">Mis reservas</a>
       {% if sesion.rol=='encargado' %}
       <a href="{{ url_for('panel') }}" class="{{ 'on' if request.endpoint=='panel' }}">Administración</a>
+      <a href="{{ url_for('reportes') }}" class="{{ 'on' if request.endpoint=='reportes' }}">Reportes</a>
       {% endif %}
-      <a class="notification-link" href="{{ url_for('notificaciones') }}" aria-label="Notificaciones">
+      <a class="notification-link" href="{{ url_for('notificaciones_view') }}" aria-label="Notificaciones">
         Notificaciones
         {% if no_leidas %}<span class="dot">{{ no_leidas }}</span>{% endif %}
       </a>
@@ -54,7 +55,7 @@
 <main class="page-container">{% block c %}{% endblock %}</main>
 <footer class="site-footer">
   <span>Instituto Tecnológico de Minatitlán</span>
-  <span>Sistema de Reservación de Salas de Cómputo</span>
+  <span>RESCOM ITM · Sistema de Reservaciones de Salas de Cómputo</span>
 </footer>
 <div class="toasts">
   {% for c,m in get_flashed_messages(with_categories=true) %}
@@ -64,3 +65,4 @@
 <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>
+

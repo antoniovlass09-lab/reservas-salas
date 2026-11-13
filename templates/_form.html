@@ -1,9 +1,72 @@
-{% set sel = (sala_sel or sala_id)|string %}{% set fv = form or {} %}
-<form method="post" action="{{ url_for('reservar') }}">{{ csrf_input() }}
-<label>Sala</label><select name="sala" id="f-sala">{% for s in salas %}<option value="{{ s.id }}" {{ 'selected' if sel==s.id|string }}>{{ s.nombre }}</option>{% endfor %}</select>
-<label>Fecha</label><input type="date" name="fecha" id="f-fecha" min="{{ hoy }}" value="{{ fv.get('fecha','') }}" required>
-<div class="row"><div><label>Inicio</label><input type="time" name="hora_inicio" id="f-ini" step="1800" min="07:00" max="20:30" value="{{ fv.get('hora_inicio','') }}" required></div>
-<div><label>Fin</label><input type="time" name="hora_fin" id="f-fin" step="1800" min="07:30" max="21:00" value="{{ fv.get('hora_fin','') }}" required></div></div>
-<div class="disp" id="disp"></div>
-<div class="row"><div><label>Materia</label><input name="materia" maxlength="100" value="{{ fv.get('materia','') }}" required></div><div><label>Alumnos</label><input type="number" name="alumnos" min="1" value="{{ fv.get('alumnos','') }}" required></div></div>
-<label>Motivo / práctica</label><textarea name="motivo" rows="3" maxlength="500" required>{{ fv.get('motivo','') }}</textarea><br><button style="width:100%">Enviar solicitud</button></form>
+
+{% set sel = (sala_sel or sala_id)|string %}
+{% set fv = form or {} %}
+
+<form method="post" action="{{ url_for('reservar') }}">
+    {{ csrf_input() }}
+
+    <label>Sala</label>
+    <select name="sala" id="f-sala">
+        {% for s in salas %}
+        <option value="{{ s.id }}" {{ 'selected' if sel==s.id|string }}>
+            {{ s.nombre }}
+        </option>
+        {% endfor %}
+    </select>
+
+    <label>Fecha</label>
+    <input type="date" name="fecha" id="f-fecha"
+           min="{{ hoy }}" value="{{ fv.get('fecha','') }}" required>
+
+    <div class="row">
+        <div>
+            <label>Hora de inicio</label>
+            <input type="time" name="hora_inicio" id="f-ini"
+                   step="3600" min="07:00" max="20:00"
+                   value="{{ fv.get('hora_inicio','') }}" required>
+        </div>
+
+        <div>
+            <label>Hora de finalización</label>
+            <input type="time" name="hora_fin" id="f-fin"
+                   step="3600" min="08:00" max="21:00"
+                   value="{{ fv.get('hora_fin','') }}" required>
+        </div>
+    </div>
+
+    <div class="disp" id="disp"></div>
+
+    <label>Materia</label>
+    {% if materias %}
+    <select name="materia" id="f-materia" data-otro="#bloque-materia-otra" required>
+        <option value="" disabled {{ 'selected' if not fv.get('materia') }}>Selecciona una materia</option>
+        {% for m in materias %}
+        <option value="{{ m }}" {{ 'selected' if fv.get('materia')==m }}>{{ m }}</option>
+        {% endfor %}
+        <option value="__otra__" {{ 'selected' if fv.get('materia')=='__otra__' }}>Otra…</option>
+    </select>
+    <div id="bloque-materia-otra" hidden>
+        <label>¿Qué materia impartirás?</label>
+        <input name="materia_otra" maxlength="100" value="{{ fv.get('materia_otra','') }}">
+    </div>
+    {% elif materias_restringido %}
+    <select disabled><option>Sin materias activas asignadas</option></select>
+    {% else %}
+    <input name="materia" maxlength="100"
+           value="{{ fv.get('materia','') }}" required>
+    {% endif %}
+
+    <label>Motivo</label>
+    <select name="motivo_tipo" id="f-motivo" data-otro="#bloque-motivo-otro" required>
+        <option value="" disabled {{ 'selected' if not fv.get('motivo_tipo') }}>Selecciona un motivo</option>
+        <option value="Práctica" {{ 'selected' if fv.get('motivo_tipo')=='Práctica' }}>Práctica</option>
+        <option value="Otro" {{ 'selected' if fv.get('motivo_tipo')=='Otro' }}>Otro</option>
+    </select>
+    <div id="bloque-motivo-otro" hidden>
+        <label>Escribe tu motivo</label>
+        <textarea name="motivo_otro" rows="3" maxlength="500">{{ fv.get('motivo_otro','') }}</textarea>
+    </div>
+
+    <br>
+    <button style="width:100%">Enviar solicitud</button>
+</form>
