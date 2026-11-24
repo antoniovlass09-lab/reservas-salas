@@ -1,0 +1,7 @@
+{% extends "base.html" %}{% block c %}
+<div class="card">
+  <div class="bar"><div><h1>Salas en vivo</h1><p class="sub" style="margin:0">Qué clase hay ahora en cada sala y si el docente está en ella. {{ 'Marca la presencia de cualquier docente.' if sesion.rol=='encargado' else 'Marca aquí que ya estás en tu sala.' }}</p></div></div>
+  <div class="legend" style="margin:0"><span><i class="punto presente"></i>En la sala</span><span><i class="punto ausente"></i>No está</span><span><i class="punto sin"></i>Sin registro</span></div>
+</div>
+<div id="vivo" data-refresco="30">{% include "_vivo.html" %}</div>
+{% endblock %}

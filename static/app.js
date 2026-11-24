@@ -18,11 +18,75 @@ $$("[data-print]").forEach(b=>b.addEventListener("click",()=>window.print()));
 // Modal de reservación desde el calendario
 const modal=$("#modal");
 const abrir=()=>{modal?.classList.add("on");verificar()},cerrar=()=>modal?.classList.remove("on");
-$$("td.libre").forEach(td=>td.addEventListener("click",()=>{
-  const [h,m]=td.dataset.hora.split(":").map(Number),f=h*60+m+60,p=n=>String(n).padStart(2,"0");
-  $("#f-fecha").value=td.dataset.fecha;$("#f-ini").value=td.dataset.hora;$("#f-fin").value=p(Math.floor(f/60))+":"+p(f%60);abrir()}));
+const prellenar=(fecha,hora)=>{
+  const [h,m]=hora.split(":").map(Number),f=h*60+m+60,p=n=>String(n).padStart(2,"0");
+  $("#f-fecha").value=fecha;$("#f-ini").value=hora;$("#f-fin").value=p(Math.floor(f/60))+":"+p(f%60);abrir()};
+$$("td.libre").forEach(td=>td.addEventListener("click",()=>prellenar(td.dataset.fecha,td.dataset.hora)));
 $("#abrir")?.addEventListener("click",abrir);$("#cerrar")?.addEventListener("click",cerrar);
 modal?.addEventListener("click",e=>{if(e.target===modal)cerrar()});addEventListener("keydown",e=>e.key==="Escape"&&cerrar());
+// Detalle de una clase o reservación del calendario (materia, docente, clave, cancelar)
+const modalClase=$("#modal-clase");
+const cerrarClase=()=>modalClase?.classList.remove("on");
+const abrirClase=td=>{
+  const d=td.dataset,esClase=d.tipo==="clase",cancelada=!!d.estado&&d.estado==="Cancelada";
+  $("#cl-materia").textContent=d.materia;
+  $("#cl-horario").textContent=d.horario;
+  $("#cl-docente").textContent=d.docente||"Sin asignar";
+  $("#cl-clave").textContent=d.clave||"Pendiente";
+  $("#cl-clave-fila").hidden=!esClase;
+  $("#cl-grupo").textContent=d.grupo;
+  $("#cl-grupo-fila").hidden=!d.grupo;
+  $("#cl-estado").textContent=d.estado||"";
+  $("#cl-estado-fila").hidden=!d.estado;
+  let motivo=d.motivo||"";
+  if(cancelada&&d.por)motivo+=(motivo?" · ":"")+"cancelada por "+d.por;
+  $("#cl-motivo-t").textContent=cancelada?"Motivo de la cancelación":"Motivo de la reservación";
+  $("#cl-motivo").textContent=motivo;
+  $("#cl-motivo-fila").hidden=!motivo;
+  const aviso=$("#cl-aviso");aviso.textContent=d.aviso||"";aviso.hidden=!d.aviso;
+  // Asistencia: punto verde (en la sala) / rojo (no está) y botones para registrarla
+  const as=d.asist||"",puedeMarcar=d.marcar==="1";
+  $("#cl-asist-fila").hidden=!(as||puedeMarcar);
+  $("#cl-asist-punto").className="punto "+(as||"sin");
+  let txt=as==="presente"?"En la sala":as==="ausente"?"No está en la sala":"Sin registro";
+  if(as&&d.asistPor)txt+=" · "+d.asistPor+(d.asistHora?", "+d.asistHora:"");
+  $("#cl-asist-txt").textContent=txt;
+  const av=$("#cl-aviso-asist");av.textContent=d.avisoMarcar||"";av.hidden=!d.avisoMarcar;
+  const fa=$("#cl-form-asistencia");fa.hidden=!puedeMarcar;
+  if(puedeMarcar){
+    const enc=d.modo==="encargado";
+    fa.elements.next.value=location.pathname+location.search;
+    fa.elements.tipo.value=d.tipo;fa.elements.id.value=esClase?d.hid:d.rid;fa.elements.fecha.value=d.fecha;
+    $("#cl-asist-label").textContent=enc?"¿El docente está en la sala?":"¿Estás en la sala?";
+    $("#cl-btn-presente").textContent=enc?"🟢 Está en la sala":"🟢 Estoy en la sala";
+    $("#cl-btn-ausente").textContent=enc?"🔴 No está":"🔴 No estoy";
+    $("#cl-btn-quitar").hidden=!(enc&&as);
+  }
+  // Reservar una hora liberada por una clase cancelada
+  const rb=$("#cl-reservar");rb.hidden=d.reservable!=="1";
+  rb.onclick=()=>{cerrarClase();prellenar(d.fecha,d.hora)};
+  // Cancelar clase o reservación
+  const fc=$("#cl-form-cancelar");fc.hidden=d.cancelar!=="1";
+  if(!fc.hidden){
+    fc.action=esClase?fc.dataset.urlClase:fc.dataset.urlReserva.replace("__ID__",d.rid);
+    fc.elements.next.value=location.pathname+location.search;
+    fc.elements.horario_id.disabled=!esClase;fc.elements.fecha.disabled=!esClase;
+    fc.elements.horario_id.value=d.hid||"";fc.elements.fecha.value=d.fecha||"";
+    fc.elements.motivo.value="";
+    $("#cl-btn-cancelar").textContent=esClase?"Cancelar clase":"Cancelar reservación";
+  }
+  // Restablecer una clase cancelada (solo encargado)
+  const fr=$("#cl-form-restablecer");fr.hidden=d.restablecer!=="1";
+  if(!fr.hidden){fr.elements.next.value=location.pathname+location.search;fr.elements.cancelacion_id.value=d.cid}
+  modalClase.classList.add("on");
+};
+$$("td[data-materia]").forEach(td=>{
+  td.addEventListener("click",()=>abrirClase(td));
+  td.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();abrirClase(td)}});
+});
+$("#cerrar-clase")?.addEventListener("click",cerrarClase);
+modalClase?.addEventListener("click",e=>{if(e.target===modalClase)cerrarClase()});
+addEventListener("keydown",e=>e.key==="Escape"&&cerrarClase());
 // Verificación de disponibilidad en vivo
 async function verificar(){
   const d=$("#disp");if(!d)return;
@@ -48,6 +112,18 @@ $$("[data-filtro]").forEach(i=>i.addEventListener("input",()=>{
 $$(".tabs button").forEach(b=>b.addEventListener("click",()=>{
   $$(".tabs button").forEach(x=>x.classList.toggle("on",x===b));
   $$(".pane").forEach(p=>p.classList.toggle("on",p.id===b.dataset.tab))}));
+// Abrir la pestaña indicada en la dirección (#t8, #t6...) al volver de guardar
+if(location.hash){const b=$(`.tabs button[data-tab="${location.hash.slice(1)}"]`);if(b)b.click()}
+// Bitácora: hoja carta vertical u horizontal (cambia la orientación de impresión al instante)
+const selOrient=$("[data-orient]");
+if(selOrient){
+  const aplicar=()=>{
+    const v=selOrient.value==="vertical",est=$("#estilo-pagina");
+    if(est)est.textContent="@page{size:letter "+(v?"portrait":"landscape")+";margin:11mm 10mm 14mm}";
+    $(".bit")?.classList.toggle("vertical",v);
+  };
+  selOrient.addEventListener("change",aplicar);aplicar();
+}
 // Barras animadas
 $$(".bars span").forEach(s=>{const w=s.dataset.w;s.style.width=0;setTimeout(()=>s.style.width=w,150)});
 // Mostrar / ocultar contraseña (sin JS en línea por la CSP)
@@ -72,3 +148,17 @@ $$("select[data-otro]").forEach(s=>{
   s.addEventListener("change",()=>{actualizar();const c=$("input,textarea",bloque);if(!bloque.hidden&&c)c.focus()});
   actualizar();
 });
+// Pantalla «En vivo»: se actualiza sola cada 30 segundos (sin recargar toda la página)
+const vivo=$("#vivo");
+if(vivo){
+  const refrescar=async()=>{
+    if(document.hidden)return;
+    try{
+      const r=await fetch(location.pathname+"?parcial=1",{credentials:"same-origin",headers:{"X-Requested-With":"fetch"}});
+      if(r.redirected){location.reload();return}  // la sesión expiró: vuelve al inicio de sesión
+      if(r.ok)vivo.innerHTML=await r.text();
+    }catch(e){}
+  };
+  setInterval(refrescar,(+vivo.dataset.refresco||30)*1000);
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden)refrescar()});
+}

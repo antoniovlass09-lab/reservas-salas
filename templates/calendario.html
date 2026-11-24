@@ -1,12 +1,32 @@
-{% extends "base.html" %}{% block c %}<div class="card"><div class="bar"><div><h1>Calendario semanal</h1><p class="sub" style="margin:0">Toca un espacio libre para reservar.</p></div>
+{% extends "base.html" %}{% block c %}<div class="card"><div class="bar"><div><h1>Calendario semanal</h1><p class="sub" style="margin:0">Toca un espacio libre para reservar o una clase para ver sus detalles.</p></div>
 <form method="get" style="margin-left:auto"><label style="margin-top:0">Sala</label><select name="sala" data-autosubmit>
 {% for s in salas %}<option value="{{ s.id }}" {{ 'selected' if s.id==sala_id }}>{{ s.nombre }}</option>{% endfor %}</select></form></div>
 <div class="bar"><a class="btn alt" href="?sala={{ sala_id }}&semana={{ prev }}">← Anterior</a><a class="btn alt" href="?sala={{ sala_id }}">Hoy</a><a class="btn alt" href="?sala={{ sala_id }}&semana={{ nxt }}">Siguiente →</a>
 <button id="abrir">＋ Nueva reservación</button></div>
-<div class="legend"><span><i style="background:#12a77d55"></i>Aprobada</span><span><i style="background:#f5a52460"></i>En espera</span><span><i style="background:#6a759250"></i>Mantenimiento</span><span><i style="background:var(--bg);border:1.5px solid var(--pri)"></i>Libre</span></div>
+<div class="legend"><span><i style="background:#12a77d55"></i>Aprobada</span><span><i style="background:#f5a52460"></i>En espera</span><span><i style="background:#6a759250"></i>Mantenimiento</span><span><i class="lg-cancelada"></i>Clase cancelada (disponible)</span><span><i style="background:var(--bg);border:1.5px solid var(--pri)"></i>Libre</span><span><i class="punto presente"></i>En la sala</span><span><i class="punto ausente"></i>No está</span></div>
 <table class="cal"><thead><tr><th>Hora</th>{% for d in dias %}<th class="{{ 'hoy' if d.isoformat()==hoy }}">{{ ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'][loop.index0] }}<br>{{ d.strftime('%d/%m') }}</th>{% endfor %}</tr></thead><tbody>
 {% for s in slots %}<tr><th class="{{ 'media' if s.endswith(':30') }}">{{ s }}</th>{% for d in dias %}{% set iso = d.isoformat() %}{% set c = celdas.get((iso, s)) %}
-{% if c %}<td class="{{ c[1] }}" title="{{ c[0] }}">{% if c[2] %}<small>{{ c[0] }}</small>{% endif %}</td>
-{% elif iso < hoy or (iso == hoy and s < ahora) %}<td class="past"></td>
+{% if c %}{% set dt = c[3] %}<td class="{{ c[1] }}" title="{{ c[0] }}"{% if dt %} data-tipo="{{ dt.tipo }}" data-materia="{{ dt.materia }}" data-docente="{{ dt.docente }}" data-clave="{{ dt.clave }}" data-grupo="{{ dt.grupo }}" data-horario="{{ dt.horario }}" data-estado="{{ dt.estado }}" data-motivo="{{ dt.motivo }}" data-por="{{ dt.por }}" data-fecha="{{ dt.fecha }}" data-hora="{{ dt.hora }}" data-hid="{{ dt.hid }}" data-rid="{{ dt.rid }}" data-cid="{{ dt.cid }}" data-cancelar="{{ '1' if dt.cancelar else '' }}" data-aviso="{{ dt.aviso }}" data-restablecer="{{ '1' if dt.restablecer else '' }}" data-reservable="{{ '1' if dt.reservable else '' }}" data-asist="{{ dt.asist }}" data-asist-por="{{ dt.asist_por }}" data-asist-hora="{{ dt.asist_hora }}" data-marcar="{{ '1' if dt.marcar else '' }}" data-modo="{{ dt.modo }}" data-aviso-marcar="{{ dt.aviso_marcar }}" tabindex="0" role="button"{% endif %}>{% if c[2] %}{% if dt %}<small>{% if dt.cancelada %}<b class="tag-cancelada">CANCELADA</b><br>{% endif %}{% if dt.asist %}<i class="punto {{ dt.asist }}" title="{{ 'En la sala' if dt.asist=='presente' else 'No está en la sala' }}"></i>{% endif %}<strong>{{ dt.materia }}</strong></small>{% else %}<small>{{ c[0] }}</small>{% endif %}{% endif %}</td>
+{% elif iso < hoy or (iso == hoy and s not in slots_hoy) %}<td class="past"></td>
 {% else %}<td class="libre" data-fecha="{{ iso }}" data-hora="{{ s }}"></td>{% endif %}{% endfor %}</tr>{% endfor %}</tbody></table></div>
-<div class="modal" id="modal"><div class="card"><button class="x" id="cerrar">✕</button><h1>Nueva reservación</h1><p class="sub">Completa los datos de tu práctica.</p>{% include "_form.html" %}</div></div>{% endblock %}
+<div class="modal" id="modal"><div class="card"><button class="x" id="cerrar">✕</button><h1>Nueva reservación</h1><p class="sub">Completa los datos de tu práctica.</p>{% include "_form.html" %}</div></div><div class="modal" id="modal-clase"><div class="card"><button class="x" id="cerrar-clase" type="button" aria-label="Cerrar">✕</button><h1 id="cl-materia"></h1><p class="sub" id="cl-horario"></p>
+<dl class="detalle-clase">
+<div id="cl-estado-fila" hidden><dt>Estado</dt><dd id="cl-estado"></dd></div>
+<div><dt>Docente</dt><dd id="cl-docente"></dd></div>
+<div id="cl-clave-fila"><dt>Clave</dt><dd id="cl-clave"></dd></div>
+<div id="cl-grupo-fila"><dt>Grupo</dt><dd id="cl-grupo"></dd></div>
+<div id="cl-asist-fila" hidden><dt>Asistencia</dt><dd><i class="punto sin" id="cl-asist-punto"></i><span id="cl-asist-txt"></span></dd></div>
+<div id="cl-motivo-fila" hidden><dt id="cl-motivo-t">Motivo</dt><dd id="cl-motivo"></dd></div>
+</dl>
+<p class="aviso-clase" id="cl-aviso" hidden></p>
+<p class="aviso-clase" id="cl-aviso-asist" hidden></p>
+<div class="acciones-clase">
+<form method="post" id="cl-form-asistencia" hidden action="{{ url_for('registrar_asistencia') }}">{{ csrf_input() }}<input type="hidden" name="next"><input type="hidden" name="tipo"><input type="hidden" name="id"><input type="hidden" name="fecha">
+<label id="cl-asist-label">¿Estás en la sala?</label>
+<div class="botones-asist"><button name="estado" value="presente" class="ok" id="cl-btn-presente">🟢 Estoy en la sala</button><button name="estado" value="ausente" class="no" id="cl-btn-ausente">🔴 No estoy</button></div>
+<button name="estado" value="sin_registro" class="ghost" id="cl-btn-quitar" hidden>Quitar registro</button></form>
+<button type="button" id="cl-reservar" hidden>Reservar este horario</button>
+<form method="post" id="cl-form-cancelar" hidden data-url-clase="{{ url_for('cancelar_clase') }}" data-url-reserva="{{ url_for('cancelar', rid='__ID__') }}" data-confirm="¿Confirmas la cancelación?">{{ csrf_input() }}<input type="hidden" name="next"><input type="hidden" name="horario_id"><input type="hidden" name="fecha">
+<label id="cl-motivo-label">Motivo de la cancelación</label><input name="motivo" maxlength="200" required placeholder="Escribe el motivo"><button class="no" id="cl-btn-cancelar">Cancelar</button></form>
+<form method="post" id="cl-form-restablecer" hidden action="{{ url_for('restablecer_clase') }}" data-confirm="¿Restablecer esta clase?">{{ csrf_input() }}<input type="hidden" name="next"><input type="hidden" name="cancelacion_id"><button class="ghost">Restablecer clase</button></form>
+</div></div></div>{% endblock %}

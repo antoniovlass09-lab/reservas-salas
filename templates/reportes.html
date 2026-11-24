@@ -1,48 +1,90 @@
 {% extends "base.html" %}{% block c %}
-<div class="only-print rep-head">
-  <img src="{{ url_for('static', filename='img/logo-tecnm.png') }}" alt="Tecnológico Nacional de México">
-  <div><b>Instituto Tecnológico de Minatitlán</b><br>RESCOM ITM · Reporte mensual de uso de salas de cómputo<br>{{ mes_txt }} · Generado el {{ generado }}</div>
-  <img src="{{ url_for('static', filename='img/logo-itm.png') }}" alt="Instituto Tecnológico de Minatitlán">
-</div>
-
 <div class="card no-print">
-  <div class="bar"><div><h1>Reporte mensual</h1><p class="sub" style="margin:0">Materias y docentes que usaron cada sala (reservaciones aprobadas y finalizadas).</p></div></div>
+  <div class="bar"><div><h1>Reporte mensual</h1><p class="sub" style="margin:0">Bitácora de uso: clases de cada día, materias, docentes, asistencia, reservaciones, cancelaciones con su motivo y mantenimientos.</p></div></div>
   <form method="get" class="row" style="align-items:end">
     <div><label>Mes</label><input type="month" name="mes" value="{{ mes }}" required></div>
     <div><label>Sala</label><select name="sala"><option value="todas">Todas las salas</option>{% for s in salas %}<option value="{{ s.id }}" {{ 'selected' if s.id==sala_sel }}>{{ s.nombre }}</option>{% endfor %}</select></div>
+    <div><label>Hoja carta</label><select name="orient" data-orient><option value="horizontal" {{ 'selected' if orient=='horizontal' }}>Horizontal</option><option value="vertical" {{ 'selected' if orient=='vertical' }}>Vertical</option></select></div>
     <button>Generar</button>
   </form>
   <div class="bar" style="margin-top:14px">
-    <a class="btn alt" href="?mes={{ prev }}&sala={{ sala_sel }}">← Mes anterior</a>
-    <a class="btn alt" href="?mes={{ nxt }}&sala={{ sala_sel }}">Mes siguiente →</a>
+    <a class="btn alt" href="?mes={{ prev }}&sala={{ sala_sel }}&orient={{ orient }}">← Mes anterior</a>
+    <a class="btn alt" href="?mes={{ nxt }}&sala={{ sala_sel }}&orient={{ orient }}">Mes siguiente →</a>
     <a class="btn alt" href="?mes={{ mes }}&sala={{ sala_sel }}&formato=csv" style="margin-left:auto">⬇ Descargar CSV (Excel)</a>
     <button type="button" data-print>🖨 Imprimir / guardar PDF</button>
   </div>
 </div>
 
-<div class="stats">
-  <div class="stat c"><b>{{ rs|length }}</b><span>Reservaciones en {{ mes_txt }}</span></div>
-  <div class="stat b"><b>{{ total_horas|round(1) }}</b><span>Horas de uso</span></div>
-  <div class="stat"><b>{{ resumen|length }}</b><span>Salas con actividad</span></div>
-</div>
+<style id="estilo-pagina">@page{size:letter {{ 'portrait' if orient=='vertical' else 'landscape' }};margin:11mm 10mm 14mm}</style>
+<section class="bit {{ 'vertical' if orient=='vertical' }}">
+  <div class="bit-enc">
+    <img src="{{ url_for('static', filename='img/logo-tecnm.png') }}" alt="Tecnológico Nacional de México">
+    <div class="bit-titulos">
+      <small>Tecnológico Nacional de México</small>
+      <b>Instituto Tecnológico de Minatitlán</b>
+      <h1>Bitácora mensual de uso de salas de cómputo</h1>
+      <span>RESCOM ITM · Sistema de Reservaciones de Salas de Cómputo</span>
+    </div>
+    <img src="{{ url_for('static', filename='img/logo-itm.png') }}" alt="Instituto Tecnológico de Minatitlán">
+  </div>
 
-{% for s in resumen %}
-<div class="card">
-  <h2>{{ s.nombre }}</h2><p class="sub">{{ s.reservas }} reservación(es) · {{ s.horas|round(1) }} hora(s)</p>
-  <table><thead><tr><th>Materia</th><th>Docente</th><th>Reservaciones</th><th>Horas</th></tr></thead><tbody>
-  {% for d in s.detalle %}<tr><td>{{ d.materia }}</td><td>{{ d.docente }}</td><td>{{ d.reservas }}</td><td>{{ d.horas|round(1) }}</td></tr>{% endfor %}
-  </tbody></table>
-</div>
-{% else %}
-<div class="card"><p>No hay reservaciones aprobadas o finalizadas en {{ mes_txt }}.</p></div>
-{% endfor %}
+  <div class="bit-datos">
+    <div><span>Periodo</span><b>{{ periodo_txt }}</b></div>
+    <div><span>Sala(s)</span><b>{{ sala_txt }}</b></div>
+    <div><span>Generado el</span><b>{{ generado }}</b></div>
+    <div><span>Generado por</span><b>{{ generado_por }}</b></div>
+  </div>
 
-{% if rs %}
-<div class="card">
-  <h2>Detalle de registros</h2>
-  <table><thead><tr><th>Fecha</th><th>Horario</th><th>Sala</th><th>Materia</th><th>Docente</th></tr></thead><tbody>
-  {% for r in rs %}<tr><td>{{ r.fecha }}</td><td>{{ r.hora_inicio }}–{{ r.hora_fin }}</td><td>{{ r.sala }}</td><td>{{ r.materia }}</td><td>{{ r.docente }}</td></tr>{% endfor %}
-  </tbody></table>
-</div>
-{% endif %}
+  <div class="bit-kpis">
+    <div class="k c"><b>{{ total_prog }}</b><span>Clases programadas</span></div>
+    <div class="k b"><b>{{ total_imp }}</b><span>Clases impartidas</span></div>
+    <div class="k a"><b>{{ total_canc }}</b><span>Clases canceladas</span></div>
+    <div class="k c"><b>{{ total_res }}</b><span>Reservaciones</span></div>
+    <div class="k a"><b>{{ total_res_canc }}</b><span>Reservaciones canceladas</span></div>
+    <div class="k b"><b>{{ total_horas|round(1) }}</b><span>Horas reservadas</span></div>
+  </div>
+  <div class="bit-kpis bit-kpis-asis">
+    <div class="k b"><b><i class="punto presente"></i>{{ total_pres }}</b><span>Docente en la sala</span></div>
+    <div class="k r"><b><i class="punto ausente"></i>{{ total_aus }}</b><span>Docente no estuvo</span></div>
+    <div class="k"><b><i class="punto sin"></i>{{ total_sinreg }}</b><span>Sin registro de asistencia</span></div>
+  </div>
+
+  <h2 class="bit-sec">Resumen por sala</h2>
+  {% for s in resumen %}
+  <div class="bit-sala">
+    <div class="bit-sala-cab"><h3>Sala {{ s.nombre }}</h3>
+      <p>{{ s.programadas }} programadas · {{ s.impartidas }} impartidas · {{ s.canceladas }} canceladas · {{ s.reservas }} reservaciones ({{ s.horas|round(1) }} h) · {{ s.reservas_canc }} reservaciones canceladas</p>
+      <p class="asis-linea"><span><i class="punto presente"></i>{{ s.presentes }} en la sala</span><span><i class="punto ausente"></i>{{ s.ausentes }} no estuvo</span><span><i class="punto sin"></i>{{ s.sin_registro }} sin registro</span></p></div>
+    <table class="bit-tabla"><thead><tr><th>Materia</th><th>Docente</th><th class="n">Programadas</th><th class="n">Impartidas</th><th class="n">Canceladas</th><th class="n">Reservaciones</th><th class="n">En la sala</th><th class="n">No estuvo</th></tr></thead><tbody>
+    {% for d in s.detalle %}<tr><td>{{ d.materia }}{% if d.grupo %} · Gpo. {{ d.grupo }}{% endif %}</td><td>{{ d.docente }}</td><td class="n">{{ d.programadas }}</td><td class="n">{{ d.impartidas }}</td><td class="n">{{ d.canceladas }}</td><td class="n">{{ d.reservas }}</td><td class="n">{{ d.presentes }}</td><td class="n">{{ d.ausentes }}</td></tr>{% endfor %}
+    </tbody></table>
+  </div>
+  {% else %}
+  <p class="bit-vacio">No hay clases ni reservaciones registradas en {{ mes_txt }}.</p>
+  {% endfor %}
+
+  {% if dias_rep %}
+  <h2 class="bit-sec salto">Registro día por día</h2>
+  <p class="bit-nota">Cada clase del horario, reservación y mantenimiento, con su estado y asistencia. Las cancelaciones muestran el motivo y quién las hizo.</p>
+  {% for d in dias_rep %}
+  <div class="bit-dia">
+    <div class="bit-dia-cab"><b>{{ d.titulo }}</b><span>{{ d.filas|length }} registro(s)</span></div>
+    <table class="bit-tabla"><thead><tr><th>Horario</th><th>Sala</th><th>Tipo</th><th>Materia</th><th>Docente</th><th>Estado</th><th>Asistencia</th><th>Observaciones</th></tr></thead><tbody>
+    {% for e in d.filas %}<tr class="{{ 'fila-cancelada' if e.estado=='Cancelada' }}"><td class="nw">{{ e.inicio }}–{{ e.fin }}</td><td>{{ e.sala }}</td><td>{{ e.tipo }}</td><td>{{ e.materia }}{% if e.grupo %} · Gpo. {{ e.grupo }}{% endif %}</td><td>{{ e.docente }}</td><td><span class="badge {{ e.estado }}">{{ e.estado }}</span></td>
+      <td>{% if e.asis=='presente' %}<span class="asis presente"><i class="punto presente"></i>En la sala</span>{% elif e.asis=='ausente' %}<span class="asis ausente"><i class="punto ausente"></i>No estuvo</span>{% elif e.asis=='sin_registro' %}<span class="asis sin"><i class="punto sin"></i>Sin registro</span>{% else %}<span class="asis na">—</span>{% endif %}{% if e.asis_por %}<small>{{ e.asis_por }}{% if e.asis_hora %} · {{ e.asis_hora }}{% endif %}</small>{% endif %}</td>
+      <td>{{ e.detalle }}{% if e.por %}<small>Cancelada por {{ e.por }}</small>{% endif %}</td></tr>{% endfor %}
+    </tbody></table>
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  <div class="bit-cierre">
+  <p class="bit-leyenda"><span><i class="punto presente"></i>En la sala: el docente o el encargado lo marcó</span><span><i class="punto ausente"></i>No estuvo: marcado como ausente</span><span><i class="punto sin"></i>Sin registro: la clase ya pasó y nadie marcó asistencia</span><span>— no aplica (cancelada o aún no ocurre)</span></p>
+
+  <div class="bit-firmas">
+    <div><span class="linea"></span><b>{{ generado_por }}</b><small>Encargado(a) del Centro de Cómputo</small></div>
+    <div><span class="linea"></span><b>&nbsp;</b><small>Vo. Bo.</small></div>
+  </div>
+  </div>
+</section>
 {% endblock %}

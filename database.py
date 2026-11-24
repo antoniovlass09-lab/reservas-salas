@@ -4,23 +4,11 @@ Importar este módulo NO falla si MongoDB está apagado (la conexión es perezos
 La app llama a conectar() e inicializar() al arrancar y muestra un error claro.
 """
 import os
+from datetime import datetime, timedelta, timezone
+
 from dotenv import load_dotenv
 
 load_dotenv()
-
-from datetime import datetime
-
-"""Conexión a MongoDB y preparación inicial de la base de datos.
-
-Importar este módulo NO falla si MongoDB está apagado (la conexión es perezosa).
-La app llama a conectar() e inicializar() al arrancar y muestra un error claro.
-"""
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
-
-from datetime import datetime
 
 from bson import ObjectId
 from bson.errors import InvalidId
@@ -45,8 +33,23 @@ materias = db["materias"]
 SALAS_OFICIALES = ["SC1", "SC2", "SC3", "LR", "LIDA"]
 
 
+# Zona horaria del plantel. El servidor (Railway, Render...) trabaja en UTC, así que
+# todas las horas del sistema se calculan con esta zona y no con la del servidor.
+ZONA_HORARIA = os.environ.get("ZONA_HORARIA", "America/Mexico_City")
+try:
+    from zoneinfo import ZoneInfo
+    TZ = ZoneInfo(ZONA_HORARIA)
+except Exception:  # sin base de datos de zonas (instala tzdata): México central, UTC-6
+    TZ = timezone(timedelta(hours=-6))
+
+
+def ahora():
+    """Fecha y hora actuales del plantel (sin zona horaria adjunta)."""
+    return datetime.now(TZ).replace(tzinfo=None)
+
+
 def ahora_texto():
-    return datetime.now().strftime("%Y-%m-%d %H:%M")
+    return ahora().strftime("%Y-%m-%d %H:%M")
 
 
 def oid(valor):

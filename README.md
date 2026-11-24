@@ -46,3 +46,10 @@ Errores genéricos (sin detalles internos) y exportación CSV protegida contra i
 En producción usa `gunicorn app:app` con HTTPS, nunca `FLASK_DEBUG=1`; en MongoDB Atlas restringe las IP permitidas y usa una contraseña única.
 Logos
 Los logos del TecNM y del ITM están en `static/img/` (`logo-tecnm.png`, `logo-itm.png`). Si no existen se muestran insignias de texto.
+
+Asistencia en la sala y pantalla «En vivo»
+Cada clase o reservación del día se puede marcar con un punto verde (el docente está en la sala) o rojo (no está). El docente marca solo lo suyo, desde 30 minutos antes de que inicie y hasta que termina; el encargado marca cualquier clase o reservación del día y puede quitar un registro. Se guarda en la colección `asistencias` con quién y a qué hora lo marcó.
+El menú «En vivo» muestra todas las salas: qué hay ahora, si el docente está y qué sigue (se actualiza solo cada 30 segundos).
+El reporte mensual (Reportes) tiene formato de bitácora: encabezado con logos, resumen por sala, registro día por día con la asistencia de cada clase y firmas. Se imprime en hoja carta horizontal; el CSV incluye las columnas de asistencia. «Sin registro» cuenta solo desde el primer día en que se usó el registro de asistencia.
+Horario académico: al arrancar, la app agrega los bloques de horario que falten en la base (SC1, SC2, SC3 y LR) sin modificar los existentes. `python cargar_horarios.py` sigue sirviendo para reescribir todo con lo que dice ese archivo y `python verificar_salas.py` para comprobar cuántas clases tiene cada sala.
+

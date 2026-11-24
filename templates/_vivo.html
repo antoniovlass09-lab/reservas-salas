@@ -1,0 +1,36 @@
+<div class="stats vivo-stats">
+  <div class="stat c"><b>{{ tot.ocupadas }}</b><span>Salas ocupadas</span></div>
+  <div class="stat"><b>{{ tot.libres }}</b><span>Salas libres{% if tot.mantenimiento %} · {{ tot.mantenimiento }} en mantenimiento{% endif %}</span></div>
+  <div class="stat b"><b>{{ tot.presentes }}</b><span>Docentes en la sala</span></div>
+  <div class="stat a"><b>{{ tot.ausentes }}</b><span>No están</span></div>
+  <div class="stat"><b>{{ tot.sin_registro }}</b><span>Sin registro todavía</span></div>
+</div>
+<p class="sub vivo-hora">{{ hoy_txt }} · actualizado a las {{ ahora }} · se refresca solo cada 30 segundos</p>
+<div class="vivo-grid">
+{% for s in salas_vivas %}
+<div class="card vivo-sala {{ s.clase }}">
+  <div class="vivo-cab"><h2>{{ s.nombre }}</h2><span class="estado-sala {{ s.clase }}">{{ s.etiqueta }}</span></div>
+  {% if s.motivo_mant %}<p class="sub" style="margin:0 0 8px">{{ s.motivo_mant }}</p>{% endif %}
+  {% for i in s.actuales %}
+  <div class="vivo-item{{ ' cancelada' if i.cancelada }}">
+    <div class="vivo-linea"><strong>{{ i.materia }}{% if i.grupo %} · Gpo. {{ i.grupo }}{% endif %}</strong><small>{{ i.docente }} · {{ i.inicio }}–{{ i.fin }} · {{ 'Clase' if i.tipo=='clase' else 'Reservación' }}{% if i.fase=='Por comenzar' %} · por comenzar{% endif %}</small></div>
+    {% if i.cancelada %}
+      <p class="vivo-asist"><b class="tag-cancelada">CANCELADA</b>{% if i.motivo %} · {{ i.motivo }}{% endif %}</p>
+    {% else %}
+      <p class="vivo-asist"><i class="punto {{ i.asist or 'sin' }}"></i>{% if i.asist=='presente' %}En la sala{% elif i.asist=='ausente' %}No está en la sala{% else %}Sin registro{% endif %}{% if i.asist and i.asist_por %}<small> · {{ i.asist_por }}{% if i.asist_hora %}, {{ i.asist_hora }}{% endif %}</small>{% endif %}</p>
+      {% if i.marcar %}
+      <form method="post" action="{{ url_for('registrar_asistencia') }}" class="vivo-acciones">{{ csrf_input() }}<input type="hidden" name="next" value="{{ url_for('en_vivo') }}"><input type="hidden" name="tipo" value="{{ i.tipo }}"><input type="hidden" name="id" value="{{ i.id }}"><input type="hidden" name="fecha" value="{{ hoy_iso }}">
+        <button name="estado" value="presente" class="ok">🟢 {{ 'Estoy en la sala' if i.modo=='docente' else 'Está en la sala' }}</button>
+        <button name="estado" value="ausente" class="no">🔴 {{ 'No estoy' if i.modo=='docente' else 'No está' }}</button>
+        {% if i.asist and i.modo=='encargado' %}<button name="estado" value="sin_registro" class="ghost">Quitar</button>{% endif %}
+      </form>
+      {% elif i.aviso %}<small class="mut">{{ i.aviso }}</small>{% endif %}
+    {% endif %}
+  </div>
+  {% else %}
+  <p class="sub" style="margin:0">Sin actividad en este momento.</p>
+  {% endfor %}
+  {% if s.siguiente %}<p class="vivo-sig">Siguiente: <b>{{ s.siguiente.inicio }}</b> · {{ s.siguiente.materia }}{% if s.siguiente.docente %} · {{ s.siguiente.docente }}{% endif %}</p>{% endif %}
+</div>
+{% endfor %}
+</div>

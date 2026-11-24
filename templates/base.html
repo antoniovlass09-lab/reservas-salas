@@ -34,6 +34,7 @@
     {% if sesion.uid %}
     <nav class="menu" aria-label="Navegación principal">
       <a href="{{ url_for('calendario') }}" class="{{ 'on' if request.endpoint=='calendario' }}">Calendario</a>
+      <a href="{{ url_for('en_vivo') }}" class="{{ 'on' if request.endpoint=='en_vivo' }}"><i class="punto presente"></i>En vivo</a>
       <a href="{{ url_for('reservar') }}" class="{{ 'on' if request.endpoint=='reservar' }}">Reservar sala</a>
       <a href="{{ url_for('mis_reservaciones') }}" class="{{ 'on' if request.endpoint=='mis_reservaciones' }}">Mis reservas</a>
       {% if sesion.rol=='encargado' %}
